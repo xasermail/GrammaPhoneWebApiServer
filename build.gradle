@@ -13,6 +13,8 @@ apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
+
+
 bootJar {
     baseName = 'gs-rest-service'
     version =  '0.1.0'
@@ -28,4 +30,5 @@ targetCompatibility = 1.8
 dependencies {
     compile("org.springframework.boot:spring-boot-starter-web")
     testCompile('org.springframework.boot:spring-boot-starter-test')
+    compile("org.postgresql:postgresql:42.2.2.jre7")
 }
