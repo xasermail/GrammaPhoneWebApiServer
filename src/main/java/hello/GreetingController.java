@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,20 +23,22 @@ public class GreetingController {
   }
 
   @RequestMapping("/getMessage")
-  public Message getMessage(@RequestParam(value="id")Integer id) throws SQLException {
+  public ArrayList<Message> getMessage(@RequestParam(value="id")Integer id) throws SQLException {
     Connection conn = DriverManager.getConnection("jdbc:postgresql://homedb:9831/postgres", "postgres", "GhbdtnVbh");
     Statement st = conn.createStatement();
-    ResultSet rs = st.executeQuery("select * from msg.message limit 1");
-    Message msg = null;
+    ResultSet rs = st.executeQuery("select * from msg.message");
+    ArrayList<Message> messageList = new ArrayList<Message>();
     while (rs.next()) {
-        msg = new Message(rs.getInt("msg_id"), rs.getInt("to_id"), rs.getInt("from_id"),
-                          rs.getDate("date_create"), rs.getDate("date_update"));
+      Message msg = null;
+      msg = new Message(rs.getInt("msg_id"), rs.getInt("to_id"), rs.getInt("from_id"),
+                        rs.getDate("date_create"), rs.getDate("date_update"));
+      messageList.add(msg);
     }
     rs.close();
     st.close();
     conn.close();
 
-    return msg;
+    return messageList;
   }
 
 
