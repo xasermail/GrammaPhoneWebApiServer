@@ -1,12 +1,17 @@
 package default_pkg;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import jdk.nashorn.internal.parser.JSONParser;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.sql.*;
+import java.util.ArrayList;
 
 public class GrammaPhoneWebApiServer {
 
@@ -30,7 +35,7 @@ public class GrammaPhoneWebApiServer {
     // на страницу /message мы будем выдавать сообщения, доступные пользователю,
     // для этого нам надо создать контекст и привязать адрес страницы к классу, который
     // будет выполнять обработку обращения на эту страницу
-    server.createContext("/message", new MyHttpHandler());
+    server.createContext("/message", new MessageHandler());
     // не знаю что это, оставим как есть
     server.setExecutor(null); // creates a default executor
     // запускаем
@@ -40,7 +45,7 @@ public class GrammaPhoneWebApiServer {
   }
 
   // это класс, который будет обрабатывать обращения пользователя к странице /message
-  class MyHttpHandler implements HttpHandler {
+  class MessageHandler implements HttpHandler {
 
     // собственно сам метод обработки обращения
     @Override
@@ -51,10 +56,64 @@ public class GrammaPhoneWebApiServer {
       // тут должна быть какая-то логика получения сообщений, но
       // допустим пока возвращаем неизменное сообщение
       // по идее тут должно быть обращение к БД
-      String response = "This works correctly";
-      httpExchange.sendResponseHeaders(200, response.length());
+      Connection connection = null;
+      String response = "";
+
+      String all_msg = "";
+
+      try {
+        connection = DriverManager.getConnection("jdbc:postgresql://homedb:9831/", "postgres", "GhbdtnVbh");
+       // response = "This works correctly";
+
+        PreparedStatement st = connection.prepareStatement("select * from msg.message");
+        ResultSet rs = st.executeQuery();
+
+        ArrayList<Message> arrMsg = new ArrayList<Message>();
+
+
+
+        while (rs.next()) {
+          response = response + rs.getInt("msg_id");
+          response = response + " " + rs.getInt("to_id");
+          response = response + " " + rs.getInt("from_id");
+          response = response + " " + rs.getTimestamp("date_create");
+          response = response + " " + rs.getTimestamp("date_update") + "\n";
+
+          Message msg = new Message();
+          msg.msg_id = rs.getInt("msg_id");
+          msg.to_id = rs.getInt("to_id");
+          msg.from_id = rs.getInt("from_id");
+          msg.date_create = rs.getTimestamp("date_create").toString();
+          msg.date_update = rs.getTimestamp("date_update").toString();
+
+          arrMsg.add(msg);
+/*
+          ObjectMapper mapper = new ObjectMapper();
+
+          String value = mapper.writeValueAsString(msg);*/
+
+
+
+
+        }
+
+        AllMessage allMsg = new AllMessage();
+        allMsg.message = arrMsg;
+
+        ObjectMapper mapper = new ObjectMapper();
+        all_msg = mapper.writeValueAsString(allMsg);
+
+        System.out.println(mapper.writeValueAsString(allMsg));
+
+      } catch (SQLException e) {
+        response = "Connection Failed";
+        e.printStackTrace();
+      }
+
+
+      httpExchange.sendResponseHeaders(200, all_msg.length());
       OutputStream os = httpExchange.getResponseBody();
-      os.write(response.getBytes());
+      os.write(all_msg.getBytes());
       os.close();
       // всё, теперь можно обращаться к странице http://localhost:8000/message
       // и мы получим сообщение This works correctly

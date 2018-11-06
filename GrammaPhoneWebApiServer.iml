@@ -7,5 +7,13 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="postgresql-42.2.5" level="project" />
+    <orderEntry type="library" name="java-json" level="project" />
+    <orderEntry type="library" name="gson-2.6.2-javadoc" level="project" />
+    <orderEntry type="library" name="gson-2.6.2-javadoc (2)" level="project" />
+    <orderEntry type="library" name="gson-2.6.2-javadoc (3)" level="project" />
+    <orderEntry type="library" name="com.fasterxml.jackson.core" level="project" />
+    <orderEntry type="library" name="com.fasterxml.jackson.databind" level="project" />
+    <orderEntry type="library" name="jackson-annotations-2.1.2" level="project" />
   </component>
 </module>
